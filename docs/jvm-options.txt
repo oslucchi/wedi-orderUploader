@@ -1,0 +1,1 @@
+-Djavax.net.ssl.trustStore="/archive/Dev/Projects/wedi/orderUploader/docs/cacerts"  -Djavax.net.ssl.trustStorePassword="keystore"
