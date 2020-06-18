@@ -149,6 +149,7 @@ public class PDFReader {
 		boolean updateOrder = false;
 		int components[] = { 0, 0, 0, 0 };
 		double orderValue = 0;
+		boolean sourceIssue = false;
 				
 		ArrayList<OrderDetails> orderDetails = new ArrayList<OrderDetails>();
 		OrderDetails od;
@@ -291,6 +292,7 @@ public class PDFReader {
 		              break;
 					}
 					od.setSourceIssue(1);
+					sourceIssue = true;
 				}
 				else
 				{
@@ -321,6 +323,7 @@ public class PDFReader {
 						if (um.compareTo(articleDetails[4].substring(0, um.length())) != 0)
 						{
 							od.setSourceIssue(1);
+							sourceIssue = true;
 						}
 						else
 						{
@@ -330,6 +333,7 @@ public class PDFReader {
 					else
 					{
 						od.setSourceIssue(1);
+						sourceIssue = true;
 					}
 				}
 				orderDetails.add(od);
@@ -378,6 +382,14 @@ public class PDFReader {
 			order.setCompositionDesign(components[2]);
 			order.setCompositionAccessories(components[0]);
 			order.setOrderValue(orderValue);
+			if (sourceIssue)
+			{
+				order.setSourceIssue("X");
+			}
+			else
+			{
+				order.setSourceIssue("");
+			}
 			order.update(conn, "idOrder");
 			log.debug("Composition and value: " + 
 					  order.getCompositionBoards() + " " +
