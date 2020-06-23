@@ -61,17 +61,39 @@ public class PDFReader {
 			address.add(text.substring(offset , text.indexOf("\n", offset + 1)));
 			offset = text.indexOf("\n", offset + 1) + 1;			
 		}
-		
-		int i = address.size() - 1;
-		cd.setProvince(address.get(i).substring(address.get(i).lastIndexOf(" ") + 1));
-		cd.setZipCode(address.get(i).substring(0, address.get(i).indexOf(" ")));
+		log.debug("Found addresses:");
+		int i;
+		for(i = 0; i < address.size(); i++)
+		{
+			log.debug(address.get(i));
+		}
+		i = address.size() - 1;
+		offset = address.get(i).indexOf(" ");
+		if (offset >= 0)
+		{
+			cd.setZipCode(address.get(i).substring(0, offset));
+		}
+		else
+		{
+			cd.setZipCode("00000");
+		}
 		if (cd.getZipCode().length() > 5)
 		{
 			log.error("Il CAP del cliente " + customer.getRefERP() + " " + customer.getDescription() +
 					  " e' errato (" + cd.getZipCode() + ")");
 			cd.setZipCode(cd.getZipCode().substring(cd.getZipCode().length() - 5));
 		}
-		cd.setCity(address.get(i).substring(address.get(i).indexOf(" ") + 1, address.get(i).lastIndexOf(" ")).replaceAll("\'", "\\\\'"));
+		offset++;
+		int lastSpace = address.get(i).length() - 2;
+		cd.setProvince(address.get(i).substring(lastSpace));
+		if (lastSpace > offset)
+		{
+			cd.setCity(address.get(i).substring(offset, lastSpace - 1));
+		}
+		else
+		{
+			cd.setCity("XXXX");
+		}
 		i--;
 		cd.setAddress(address.get(i));
 		
@@ -79,6 +101,10 @@ public class PDFReader {
 		{
 			cd.setNotes(address.get(i));
 			i--;
+		}
+		if (cd.getProvince().length() > 2)
+		{
+			cd.setProvince("XX");
 		}
 		log.debug("CAP: " + cd.getZipCode() + " - CITTA': " + cd.getCity() + " - PV: " + cd.getProvince() + 
 				  ("ADDRESS: " + cd.getAddress()));
@@ -164,7 +190,7 @@ public class PDFReader {
 			document = PDDocument.load(input);
 			PDFTextStripper pdfStripper = new PDFTextStripper();
 			text = pdfStripper.getText(document);
-//			log.debug(text);
+			log.debug(text);
 			document.close();
 		}
 		catch (IOException e1) {
