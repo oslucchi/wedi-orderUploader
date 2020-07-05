@@ -13,7 +13,8 @@ public class Orders extends DBInterface
 	protected int idCustomer;
 	protected int idCustomerDelivery;
 	protected String status;
-	protected Date preparationDate;
+	protected Date requestedAssemblyDate;
+	protected Date effectiveAssemblyDate;
 	protected Date shipmentDate;
 	protected int numberOfItemsToShip;
     protected int palletLength;
@@ -29,8 +30,8 @@ public class Orders extends DBInterface
     protected int assemblyTime;
     protected int palletCost;
     protected int insuranceCost;
-    protected String customerDescription;
     protected String customerRefERP;
+    protected String customerDescription;
     protected String customerDeliveryProvince;
     protected int compositionBoards;
     protected int compositionTrays;
@@ -43,7 +44,7 @@ public class Orders extends DBInterface
 	private void setNames()
 	{
 		tableName = "Orders";
-		idColName = "idOrders";
+		idColName = "idOrder";
 	}
 
 	public Orders()
@@ -59,18 +60,26 @@ public class Orders extends DBInterface
 	public void getOrders(DBConnection conn, int id) throws Exception
 	{
 		setNames();
-		String sql = "SELECT * " +
-					 "FROM " + tableName + " " +
-					 "WHERE " + idColName + " = " + id;
+		String sql = "SELECT a.*, b.description AS customerDescription, b.refERP AS customerRefERP, " +
+				 "       c.province AS customerDeliveryProvince " +
+				 "FROM Orders a INNER JOIN Customers b ON " +
+				 "     (a.idCustomer = b.idCustomers) " +
+				 "   INNER JOIN CustomerDelivery c ON " +
+				 "     (c.idCustomerDelivery = a.idCustomerDelivery) " +
+				 "WHERE idOrder = " + id;
 		this.populateObject(conn, sql, this);
 	}
 
 	@SuppressWarnings("unchecked")
 	public static ArrayList<Orders> getOrders(DBConnection conn, String whereCondition, int languageCode) throws Exception {
 		Logger log = Logger.getLogger(Orders.class);
-		String sql = "SELECT * " +
-					 "FROM Orders " +
-					 "WHERE " + whereCondition;
+		String sql = "SELECT a.*, b.description AS customerDescription, b.refERP AS customerRefERP, " +
+				 "       c.province AS customerDeliveryProvince " +
+				 "FROM Orders a INNER JOIN Customers b ON " +
+				 "     (a.idCustomer = b.idCustomers) " +
+				 "   INNER JOIN CustomerDelivery c ON " +
+				 "     (c.idCustomerDelivery = a.idCustomerDelivery) " +
+				 "WHERE " + whereCondition;
 		log.trace("Querying: " + sql);
 		return (ArrayList<Orders>) DBInterface.populateCollection(conn, sql, Orders.class);
 	}
@@ -156,12 +165,20 @@ public class Orders extends DBInterface
 		this.status = status;
 	}
 
-	public Date getPreparationDate() {
-		return preparationDate;
+	public Date getRequestedAssemblyDate() {
+		return requestedAssemblyDate;
 	}
 
-	public void setPreparationDate(Date preparationDate) {
-		this.preparationDate = preparationDate;
+	public void setRequestedAssemblyDate(Date requestedAssemblyDate) {
+		this.requestedAssemblyDate = requestedAssemblyDate;
+	}
+
+	public Date getEffectiveAssemblyDate() {
+		return effectiveAssemblyDate;
+	}
+
+	public void setEffectiveAssemblyDate(Date effectiveAssemblyDate) {
+		this.effectiveAssemblyDate = effectiveAssemblyDate;
 	}
 
 	public Date getShipmentDate() {

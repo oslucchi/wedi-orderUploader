@@ -110,6 +110,7 @@ public class PDFReader {
 				  ("ADDRESS: " + cd.getAddress()));
 		try
 		{
+			DBInterface.TransactionStart(conn);
 			ArrayList<CustomerDelivery> cdTemp = CustomerDelivery
 					.getCustomerDeliveryByAddress(conn, customer.getIdCustomers(), cd.getAddress(), 1);
 			if ((cdTemp == null) || (cdTemp.size() == 0))
@@ -119,11 +120,18 @@ public class PDFReader {
 			}
 			else
 			{
+				if ((cdTemp.get(0).getProvince() == null || cdTemp.get(0).getProvince().compareTo("") == 0))
+				{
+					cdTemp.get(0).setProvince(cd.getProvince());
+					cdTemp.get(0).update(conn, "idCustomerDelivery");
+				}
 				cd.setIdCustomerDelivery(cdTemp.get(0).getIdCustomerDelivery());
 			}
+			DBInterface.TransactionCommit(conn);
 		}
 		catch(Exception e)
 		{
+			DBInterface.TransactionRollback(conn);
 			e.printStackTrace();
 			log.error(e);
 		}
@@ -261,11 +269,11 @@ public class PDFReader {
 			searchFor = "circa ";
 			offset = text.indexOf(searchFor) + searchFor.length();
 			value = text.substring(offset , offset + 10);
-			order.setPreparationDate(new SimpleDateFormat("dd/MM/yyyy").parse(value));
+			order.setRequestedAssemblyDate(new SimpleDateFormat("dd/MM/yyyy").parse(value));
 			
 			getDeliveryData(text, customer);
 			order.setIdCustomerDelivery(cd.getIdCustomerDelivery());
-			
+			DBInterface.TransactionStart(conn);
 			if (updateOrder)
 			{
 				order.update(conn, "idOrder");
@@ -275,7 +283,11 @@ public class PDFReader {
 				order.setIdOrder(0);
 				idInsert = order.insertAndReturnId(conn, "idOrder", order);
 				order.setIdOrder(idInsert);
+				OrderShipment os = new OrderShipment();
+				os.setIdOrder(idInsert);
+				os.insert(conn, "idOrderShipment", os);
 			}
+			DBInterface.TransactionCommit(conn);
 
 			log.debug("Numero Ordine: " + order.getOrderRef());					
 			while((offset = text.indexOf("PZ ", offset + 1)) > 0)
@@ -428,7 +440,7 @@ public class PDFReader {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			log.error(e1);
-
+			DBInterface.TransactionRollback(conn);
 			throw e1;
 		}
 	}

@@ -250,7 +250,7 @@ public class DBInterface implements Serializable
 							}
 							catch(Exception e)
 							{
-								log.warn("Exception setting " + columnName + " to duoble", e);
+								log.error("Exception setting " + columnName + " to duoble", e);
 							}
 							break;
 							
@@ -268,7 +268,7 @@ public class DBInterface implements Serializable
 					}
 					catch(Exception e)
 					{ 
-						log.warn("Exception " + e.getMessage(), e);
+						log.error("Exception " + e.getMessage(), e);
 			    		retVal = "Error " + e.getMessage() + " retrieving fields value from object (" + Utils.printStackTrace(e) + ")";
 						throw new Exception(retVal);
 					}
@@ -690,6 +690,7 @@ public class DBInterface implements Serializable
 		sql += this.getUpdateStatement(conn, sqlQueryColNames, this, avoidColumns);
 		sql += " " + whereClause;
 		conn.executeQuery(sql, logStatement);
+		
     }
 
 	public void update(DBConnection conn, String idColumns) throws Exception
@@ -887,8 +888,15 @@ public class DBInterface implements Serializable
 	
 	public static void disconnect(DBConnection conn) 
 	{
-		if (conn != null)
-			conn.finalize();
+		try
+		{
+			if (conn != null)
+				conn.finalize();
+		}
+		catch(Exception e)
+		{
+			log.error("Eccezione " + e.getMessage(), e);
+		}
 	}
 
 	public boolean isLogStatement() {
