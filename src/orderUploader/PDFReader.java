@@ -266,6 +266,12 @@ public class PDFReader {
 			}
 			order.setIdCustomer(customer.getIdCustomers());
 			order.setStatus("SYS");
+
+			searchFor = "Data di consegna:";
+			offset = text.indexOf(searchFor) + searchFor.length() + 1;
+			value = text.substring(offset , text.substring(offset).indexOf("\n") + offset);
+			order.setCustomerOrderRef(value);
+			
 			searchFor = "circa ";
 			offset = text.indexOf(searchFor) + searchFor.length();
 			value = text.substring(offset , offset + 10);
@@ -314,6 +320,7 @@ public class PDFReader {
 					od.setQuantity(Double.parseDouble(articleDetails[0]));
 					article = new Articles(conn, od.getIdArticle());
 					orderValue += od.getQuantity() * article.getBuyPrice();
+					od.setCost(article.getBuyPrice());
 					switch(article.getCategory())
 					{
 		            case "A":
@@ -340,6 +347,7 @@ public class PDFReader {
 					od.setQuantity(Double.parseDouble(articleDetails[0]));
 					article = new Articles(conn, od.getIdArticle());
 					orderValue += od.getQuantity() * article.getBuyPrice();
+					od.setCost(article.getBuyPrice());
 					switch(article.getCategory())
 					{
 		            case "A":
@@ -392,6 +400,7 @@ public class PDFReader {
 				od.setQuantity(Double.parseDouble(articleDetails[0]));
 				article = new Articles(conn, od.getIdArticle());
 				orderValue += od.getQuantity() * article.getBuyPrice();
+				od.setCost(article.getBuyPrice());
 				switch(article.getCategory())
 				{
 	            case "A":
@@ -448,7 +457,7 @@ public class PDFReader {
 	public static void readFile(ApplicationProperties ap)
 	{
 		
-		try (Stream<Path> walk = Files.walk(Paths.get("/archive/Dev/Projects/wedi/orderUploader/spool")))
+		try (Stream<Path> walk = Files.walk(Paths.get("/archive/Dev/Projects/wedi/wedi-orderUploader/spool")))
 		{
 
 			List<String> result = walk.map(x -> x.toString())
