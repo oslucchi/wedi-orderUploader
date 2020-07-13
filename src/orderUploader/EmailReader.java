@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
@@ -183,7 +184,7 @@ public class EmailReader {
 //					m.getFolder().copyMessages(new Message[] {m}, trashFolder);
 //					continue;
 //				}
-				
+				String mailTo = m.getRecipients(RecipientType.TO)[0].toString();
 				String contentType = m.getContentType();
 				if (contentType.contains("multipart"))
 				{
@@ -196,7 +197,7 @@ public class EmailReader {
 					    {
 					    	try
 					    	{
-					    		PDFReader.getDataFromPDF(part.getInputStream(), ap);;
+					    		PDFReader.getDataFromPDF(part.getInputStream(), ap, mailTo);
 					    	}
 					    	catch(Exception e1)
 					    	{
@@ -212,11 +213,11 @@ public class EmailReader {
 			inbox.close(true);
 			trashFolder.close(true);
 			trashFolder.open(Folder.READ_WRITE);
-			for(Message m : trashFolder.getMessages())
-			{
+//			for(Message m : trashFolder.getMessages())
+//			{
 //				m.setFlag(Flags.Flag.DELETED, true);
-				;
-			}
+//				;
+//			}
 			trashFolder.close(true);
 			store.close();
 		} 

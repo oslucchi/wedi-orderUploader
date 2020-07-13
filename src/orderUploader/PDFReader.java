@@ -176,7 +176,7 @@ public class PDFReader {
 		}
 	}
 	
-	public static void getDataFromPDF(InputStream input, ApplicationProperties ap) throws Exception
+	public static void getDataFromPDF(InputStream input, ApplicationProperties ap, String mailTo) throws Exception
 	{
 		int offset = 0;
 		int idInsert = 0;
@@ -264,6 +264,7 @@ public class PDFReader {
 					throw ec;
 				}
 			}
+			order.setConfirmationEmail(mailTo);
 			order.setIdCustomer(customer.getIdCustomers());
 			order.setStatus("SYS");
 
@@ -468,7 +469,7 @@ public class PDFReader {
 				//Loading an existing document
 				File file = new File(p);
 				try {
-					getDataFromPDF(new FileInputStream(file), ap);
+					getDataFromPDF(new FileInputStream(file), ap, "");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					log.error(e);
