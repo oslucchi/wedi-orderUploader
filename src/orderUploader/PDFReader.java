@@ -210,6 +210,7 @@ public class PDFReader {
 		try
 		{
 			conn = DBInterface.connect(ap);
+			DBInterface.TransactionStart(conn);
 			String searchFor = "stedoqST_OrderNo (it) nicht gefunden!";
 			offset = text.indexOf(searchFor) + searchFor.length();
 			String value = text.substring(offset , offset + 8);
@@ -276,11 +277,11 @@ public class PDFReader {
 			searchFor = "circa ";
 			offset = text.indexOf(searchFor) + searchFor.length();
 			value = text.substring(offset , offset + 10);
+			value = value.replaceAll("\\.", "/");
 			order.setRequestedAssemblyDate(new SimpleDateFormat("dd/MM/yyyy").parse(value));
 			
 			getDeliveryData(text, customer);
 			order.setIdCustomerDelivery(cd.getIdCustomerDelivery());
-			DBInterface.TransactionStart(conn);
 			if (updateOrder)
 			{
 				order.update(conn, "idOrder");
