@@ -176,6 +176,22 @@ public class PDFReader {
 		}
 	}
 	
+	private static boolean isNumeric(String strNum) 
+	{
+		strNum = strNum.replaceAll("\\,", ".");
+	    if (strNum == null) {
+	        return false;
+	    }
+	    try {
+	        Double.parseDouble(strNum);
+	    } 
+	    catch (NumberFormatException nfe) 
+	    {
+	        return false;
+	    }
+	    return true;
+	}
+	
 	public static void getDataFromPDF(InputStream input, ApplicationProperties ap, String mailTo) throws Exception
 	{
 		int offset = 0;
@@ -307,6 +323,11 @@ public class PDFReader {
 					continue;
 				}
 				
+				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
+				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
+				if (!isNumeric(value))
+					continue;
+
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
@@ -390,6 +411,11 @@ public class PDFReader {
 			offset = 100;
 			while((offset = text.indexOf("mq ", offset + 1)) > 0)
 			{
+				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
+				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
+				if (!isNumeric(value))
+					continue;
+
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
@@ -428,6 +454,11 @@ public class PDFReader {
 			offset = 100;
 			while((offset = text.indexOf("m ", offset + 1)) > 0)
 			{
+				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
+				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
+				if (!isNumeric(value))
+					continue;
+				
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
