@@ -425,6 +425,44 @@ public class PDFReader {
 				orderDetails.add(od);
 				offset += text.substring(offset).indexOf("\n") + 1;
 			}
+			offset = 100;
+			while((offset = text.indexOf("m ", offset + 1)) > 0)
+			{
+				for(; (int) text.charAt(offset - 1) != 10; offset--)
+					;
+				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
+				log.debug("Dati articolo: " + value);
+				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
+				value = articleDetails[3].substring(articleDetails[3].length() - 10, articleDetails[3].length() - 1);
+				od = new OrderDetails();
+				od.setIdOrder(order.getIdOrder());
+				od.setIdArticle(getArticleFromDB(value));
+				od.setQuantity(Double.parseDouble(articleDetails[0]));
+				article = new Articles(conn, od.getIdArticle());
+				orderValue += od.getQuantity() * article.getBuyPrice();
+				od.setCost(article.getBuyPrice());
+				switch(article.getCategory())
+				{
+	            case "A":
+	              components[0]++;
+	              break;
+	            case "BS":
+	              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
+	              break;
+	            case "D":
+	              components[2]++;
+	              break;
+	            case "T":
+	              components[3]++;
+	              break;
+				}
+				if (article.getRateOfConversion() != 0)
+				{
+					od.setPiecesFromSqm((int)(od.getQuantity()/article.getRateOfConversion()));
+				}
+				orderDetails.add(od);
+				offset += text.substring(offset).indexOf("\n") + 1;
+			}
 			OrderDetails.insertCollection(conn, orderDetails, "idOrderDetails", OrderDetails.class);
 			order.setCompositionBoards(components[1]);
 			order.setCompositionTrays(components[3]);
