@@ -34,6 +34,9 @@ public class PDFReader {
 	private static DBConnection conn;
 	private static CustomerDelivery cd;
 	final static Logger log = Logger.getLogger(PDFReader.class);
+	static int components[] = { 0, 0, 0, 0 };
+	static double orderValue = 0;
+	static boolean sourceIssue = false;
 	
 	public PDFReader()
 	{
@@ -192,14 +195,100 @@ public class PDFReader {
 	    return true;
 	}
 	
+	private static void evaluateArticleDetails(String[] articleDetails, OrderDetails od, int idOrder) throws Exception
+	{
+		Articles article = null;
+		String value;
+		
+		if (articleDetails.length < 4)
+		{
+			log.error("riga articolo speciale.... ");
+			value = articleDetails[1].substring(articleDetails[1].length() - 11, articleDetails[1].length() - 2);
+			od.setIdOrder(idOrder);
+			od.setIdArticle(getArticleFromDB(value));
+			od.setQuantity(Double.parseDouble(articleDetails[0]));
+			article = new Articles(conn, od.getIdArticle());
+			orderValue += od.getQuantity() * article.getBuyPrice();
+			od.setCost(article.getBuyPrice());
+			switch(article.getCategory())
+			{
+            case "A":
+              components[0]++;
+              break;
+            case "BS":
+              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
+              break;
+            case "D":
+              components[2]++;
+              break;
+            case "T":
+              components[3]++;
+              break;
+			}
+			od.setSourceIssue(1);
+			sourceIssue = true;
+		}
+		else
+		{
+			value = articleDetails[3].substring(articleDetails[3].length() - 11, articleDetails[3].length() - 2);
+			od.setIdOrder(idOrder);
+			od.setIdArticle(getArticleFromDB(value));
+			od.setQuantity(Double.parseDouble(articleDetails[0]));
+			article = new Articles(conn, od.getIdArticle());
+			orderValue += od.getQuantity() * article.getBuyPrice();
+			od.setCost(article.getBuyPrice());
+			switch(article.getCategory())
+			{
+            case "A":
+              components[0]++;
+              break;
+            case "BS":
+              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
+              break;
+            case "D":
+              components[2]++;
+              break;
+            case "T":
+              components[3]++;
+              break;
+			}
+			String um = articleDetails[3].substring(articleDetails[3].length() - 2);
+			if (articleDetails[4].length() == um.length()) 
+			{
+				if (um.compareTo(articleDetails[4].substring(0, um.length())) != 0)
+				{
+					od.setSourceIssue(1);
+					sourceIssue = true;
+				}
+				else
+				{
+					od.setSourceIssue(0);
+				}
+			}
+			else
+			{
+				od.setSourceIssue(1);
+				sourceIssue = true;
+			}
+			if (article.getRateOfConversion() != 0)
+			{
+				od.setPiecesFromSqm((int)(od.getQuantity()/article.getRateOfConversion()));
+			}
+		}
+	}
+	
 	public static void getDataFromPDF(InputStream input, ApplicationProperties ap, String mailTo) throws Exception
 	{
 		int offset = 0;
 		int idInsert = 0;
 		boolean updateOrder = false;
-		int components[] = { 0, 0, 0, 0 };
-		double orderValue = 0;
-		boolean sourceIssue = false;
+		
+		for(int i = 0; i < components.length; i++)
+		{
+			components[i] = 0;
+		}
+		sourceIssue = false;
+		orderValue = 0;
 				
 		ArrayList<OrderDetails> orderDetails = new ArrayList<OrderDetails>();
 		OrderDetails od;
@@ -321,8 +410,7 @@ public class PDFReader {
 				{
 					offset += 5;
 					continue;
-				}
-				
+				}				
 				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
 				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
 				if (!isNumeric(value))
@@ -331,80 +419,11 @@ public class PDFReader {
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
+				value = value.substring(0, value.lastIndexOf("PZ") + 2);
 				log.debug("Dati articolo: " + value);
 				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
 				od = new OrderDetails();
-				if (articleDetails.length < 4)
-				{
-					log.error("riga articolo speciale.... ");
-					value = articleDetails[1].substring(articleDetails[1].length() - 11, articleDetails[1].length() - 2);
-					od.setIdOrder(order.getIdOrder());
-					od.setIdArticle(getArticleFromDB(value));
-					od.setQuantity(Double.parseDouble(articleDetails[0]));
-					article = new Articles(conn, od.getIdArticle());
-					orderValue += od.getQuantity() * article.getBuyPrice();
-					od.setCost(article.getBuyPrice());
-					switch(article.getCategory())
-					{
-		            case "A":
-		              components[0]++;
-		              break;
-		            case "BS":
-		              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
-		              break;
-		            case "D":
-		              components[2]++;
-		              break;
-		            case "T":
-		              components[3]++;
-		              break;
-					}
-					od.setSourceIssue(1);
-					sourceIssue = true;
-				}
-				else
-				{
-					value = articleDetails[3].substring(articleDetails[3].length() - 11, articleDetails[3].length() - 2);
-					od.setIdOrder(order.getIdOrder());
-					od.setIdArticle(getArticleFromDB(value));
-					od.setQuantity(Double.parseDouble(articleDetails[0]));
-					article = new Articles(conn, od.getIdArticle());
-					orderValue += od.getQuantity() * article.getBuyPrice();
-					od.setCost(article.getBuyPrice());
-					switch(article.getCategory())
-					{
-		            case "A":
-		              components[0]++;
-		              break;
-		            case "BS":
-		              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
-		              break;
-		            case "D":
-		              components[2]++;
-		              break;
-		            case "T":
-		              components[3]++;
-		              break;
-					}
-					String um = articleDetails[3].substring(articleDetails[3].length() - 2);
-					if (articleDetails[4].length() == um.length()) 
-					{
-						if (um.compareTo(articleDetails[4].substring(0, um.length())) != 0)
-						{
-							od.setSourceIssue(1);
-							sourceIssue = true;
-						}
-						else
-						{
-							od.setSourceIssue(0);
-						}
-					}
-					else
-					{
-						od.setSourceIssue(1);
-						sourceIssue = true;
-					}
-				}
+				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
 				orderDetails.add(od);
 				offset += text.substring(offset).indexOf("\n") + 1;
 			}
@@ -419,35 +438,11 @@ public class PDFReader {
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
+				value = value.substring(0, value.lastIndexOf("mq") + 2);
 				log.debug("Dati articolo: " + value);
 				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
-				value = articleDetails[3].substring(articleDetails[3].length() - 11, articleDetails[3].length() - 2);
 				od = new OrderDetails();
-				od.setIdOrder(order.getIdOrder());
-				od.setIdArticle(getArticleFromDB(value));
-				od.setQuantity(Double.parseDouble(articleDetails[0]));
-				article = new Articles(conn, od.getIdArticle());
-				orderValue += od.getQuantity() * article.getBuyPrice();
-				od.setCost(article.getBuyPrice());
-				switch(article.getCategory())
-				{
-	            case "A":
-	              components[0]++;
-	              break;
-	            case "BS":
-	              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
-	              break;
-	            case "D":
-	              components[2]++;
-	              break;
-	            case "T":
-	              components[3]++;
-	              break;
-				}
-				if (article.getRateOfConversion() != 0)
-				{
-					od.setPiecesFromSqm((int)(od.getQuantity()/article.getRateOfConversion()));
-				}
+				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
 				orderDetails.add(od);
 				offset += text.substring(offset).indexOf("\n") + 1;
 			}
@@ -462,38 +457,15 @@ public class PDFReader {
 				for(; (int) text.charAt(offset - 1) != 10; offset--)
 					;
 				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
+				value = value.substring(0, value.lastIndexOf(" m") + 2);
 				log.debug("Dati articolo: " + value);
 				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
-				value = articleDetails[3].substring(articleDetails[3].length() - 10, articleDetails[3].length() - 1);
 				od = new OrderDetails();
-				od.setIdOrder(order.getIdOrder());
-				od.setIdArticle(getArticleFromDB(value));
-				od.setQuantity(Double.parseDouble(articleDetails[0]));
-				article = new Articles(conn, od.getIdArticle());
-				orderValue += od.getQuantity() * article.getBuyPrice();
-				od.setCost(article.getBuyPrice());
-				switch(article.getCategory())
-				{
-	            case "A":
-	              components[0]++;
-	              break;
-	            case "BS":
-	              components[1] += (int)(od.getQuantity() / article.getRateOfConversion());
-	              break;
-	            case "D":
-	              components[2]++;
-	              break;
-	            case "T":
-	              components[3]++;
-	              break;
-				}
-				if (article.getRateOfConversion() != 0)
-				{
-					od.setPiecesFromSqm((int)(od.getQuantity()/article.getRateOfConversion()));
-				}
+				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
 				orderDetails.add(od);
 				offset += text.substring(offset).indexOf("\n") + 1;
 			}
+
 			OrderDetails.insertCollection(conn, orderDetails, "idOrderDetails", OrderDetails.class);
 			order.setCompositionBoards(components[1]);
 			order.setCompositionTrays(components[3]);

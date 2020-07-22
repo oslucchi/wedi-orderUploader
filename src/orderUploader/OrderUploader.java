@@ -10,6 +10,7 @@ public class OrderUploader {
 		ap = ApplicationProperties.getInstance();
 //		PDFReader.readFile(ap);
 		EmailReader.gmailReader(ap);
+//		EmailReader.gmailReaderTest(ap);
 	}
 
 }

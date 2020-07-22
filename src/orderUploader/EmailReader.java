@@ -226,4 +226,64 @@ public class EmailReader {
 			e.printStackTrace();
 		}
 	}
+
+	public static void gmailReaderTest(ApplicationProperties ap)
+	{
+		boolean errorHandlingMessage = false;
+
+		log.debug("gmailReader started");
+		Properties props = new Properties();
+		try 
+		{
+		    props.put("mail.imaps.ssl.enable", "true");
+			Session session = Session.getInstance(props);
+			Store store = session.getStore("imaps");
+			log.debug("connecting to mail server");
+			store.connect("imap.gmail.com", "ordiniwedi@gmail.com","G620sclp@");
+
+			Folder inbox = store.getFolder("archivioOrdini");
+			inbox.open(Folder.READ_ONLY);
+			int messageCount = inbox.getMessageCount();
+			log.debug(messageCount + " messages pending in INBOX");
+
+			System.out.println("Total Messages:- " + messageCount);
+
+			System.out.println("------------------------------");
+			for(Message m : inbox.getMessages())
+			{
+				errorHandlingMessage = false;
+				System.out.println("Mail Subject:- " + m.getSubject());
+				String mailTo = m.getRecipients(RecipientType.TO)[0].toString();
+				String contentType = m.getContentType();
+				if (contentType.contains("multipart"))
+				{
+					Multipart multiPart = (Multipart) m.getContent();
+					for (int y = 0; y < multiPart.getCount(); y++) 
+					{
+					    MimeBodyPart part = (MimeBodyPart) multiPart.getBodyPart(y);
+					    if ((part.getFileName() != null) && part.getFileName().startsWith("Conferma") &&
+					    	Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) 
+					    {
+					    	try
+					    	{
+					    		PDFReader.getDataFromPDF(part.getInputStream(), ap, mailTo);
+					    	}
+					    	catch(Exception e1)
+					    	{
+								errorHandlingMessage = false;
+					    		break;
+					    	}
+					    }
+					}
+				}
+			}
+			inbox.close(true);
+			store.close();
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+		}
+	}
+
 }
