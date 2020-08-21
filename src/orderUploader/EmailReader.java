@@ -86,11 +86,11 @@ public class EmailReader {
 //		    store.connect();
 			store.connect(mailsServerHost, 110, mailServerUsername, mailServerPassword);
 			
-			System.out.println(store);
+			log.debug(store);
 	
 			Folder[] f = store.getDefaultFolder().list();
 			for(Folder fd:f)
-			    System.out.println(">> "+fd.getName());			
+				log.debug(">> "+fd.getName());			
 		}
 		catch(Exception e)
 		{
@@ -112,7 +112,7 @@ public class EmailReader {
 
 			Folder inbox = store.getFolder("INBOX");
 			inbox.open(Folder.READ_ONLY);
-			System.out.println("inbox openend: " + inbox.getMessageCount());
+			log.debug("inbox openend: " + inbox.getMessageCount());
 			inbox.close(false);
 			store.close();
 		}
@@ -151,39 +151,32 @@ public class EmailReader {
 	
 	public static void gmailReader(ApplicationProperties ap)
 	{
-		boolean errorHandlingMessage = false;
-
 		log.debug("gmailReader started");
 		Properties props = new Properties();
 		try 
 		{
 		    props.put("mail.imaps.ssl.enable", "true");
 			Session session = Session.getInstance(props);
-//			session.setDebug(true);
 			Store store = session.getStore("imaps");
-			log.debug("connecting to mail server");
-			store.connect("imap.gmail.com", "ordiniwedi@gmail.com","G620sclp@");
-//		    session.setDebug(false);
+			log.debug("connecting to mail server " + ap.getMailHost() + " as " + ap.getMailUser());
+			store.connect(ap.getMailHost(), ap.getMailUser(), ap.getMailPassword());
 
 			Folder inbox = store.getFolder("inbox");
 			inbox.open(Folder.READ_WRITE);
 			int messageCount = inbox.getMessageCount();
 			log.debug(messageCount + " messages pending in INBOX");
 
-			System.out.println("Total Messages:- " + messageCount);
+			log.debug("Total Messages:- " + messageCount);
 	        Folder trashFolder = store.getFolder("[Gmail]/Cestino");
 			trashFolder.open(Folder.READ_WRITE);
 
-			System.out.println("------------------------------");
+	        Folder errorsFolder = store.getFolder("errori");
+	        errorsFolder.open(Folder.READ_WRITE);
+	        
+	        log.debug("------------------------------");
 			for(Message m : inbox.getMessages())
 			{
-				errorHandlingMessage = false;
-				System.out.println("Mail Subject:- " + m.getSubject());
-//				if (!m.getSubject().startsWith("Text order confirmations"))
-//				{
-//					m.getFolder().copyMessages(new Message[] {m}, trashFolder);
-//					continue;
-//				}
+				log.debug("Mail Subject:- " + m.getSubject());
 				String mailTo = m.getRecipients(RecipientType.TO)[0].toString();
 				String contentType = m.getContentType();
 				if (contentType.contains("multipart"))
@@ -201,24 +194,16 @@ public class EmailReader {
 					    	}
 					    	catch(Exception e1)
 					    	{
-								errorHandlingMessage = false;
 					    		break;
 					    	}
 					    }
 					}
 				}
-				if (!errorHandlingMessage)
-					m.getFolder().copyMessages(new Message[] {m}, trashFolder);
+				m.getFolder().copyMessages(new Message[] {m}, trashFolder);
 			}
 			inbox.close(true);
 			trashFolder.close(true);
-			trashFolder.open(Folder.READ_WRITE);
-//			for(Message m : trashFolder.getMessages())
-//			{
-//				m.setFlag(Flags.Flag.DELETED, true);
-//				;
-//			}
-			trashFolder.close(true);
+			errorsFolder.close(true);
 			store.close();
 		} 
 		catch (Exception e) 
@@ -229,8 +214,6 @@ public class EmailReader {
 
 	public static void gmailReaderTest(ApplicationProperties ap)
 	{
-		boolean errorHandlingMessage = false;
-
 		log.debug("gmailReader started");
 		Properties props = new Properties();
 		try 
@@ -246,13 +229,12 @@ public class EmailReader {
 			int messageCount = inbox.getMessageCount();
 			log.debug(messageCount + " messages pending in INBOX");
 
-			System.out.println("Total Messages:- " + messageCount);
+			log.debug("Total Messages:- " + messageCount);
 
-			System.out.println("------------------------------");
+			log.debug("------------------------------");
 			for(Message m : inbox.getMessages())
 			{
-				errorHandlingMessage = false;
-				System.out.println("Mail Subject:- " + m.getSubject());
+				log.debug("Mail Subject:- " + m.getSubject());
 				String mailTo = m.getRecipients(RecipientType.TO)[0].toString();
 				String contentType = m.getContentType();
 				if (contentType.contains("multipart"))
@@ -270,7 +252,6 @@ public class EmailReader {
 					    	}
 					    	catch(Exception e1)
 					    	{
-								errorHandlingMessage = false;
 					    		break;
 					    	}
 					    }

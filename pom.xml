@@ -18,7 +18,11 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <release>11</release>
+          <source>1.8</source>
+          <target>1.8</target>
+<!--
+          <release>11</release> 
+ -->
         </configuration>
       </plugin>
 		<plugin>
@@ -54,7 +58,9 @@
 						<Class-Path>.</Class-Path>
 					</manifestEntries>
 				</archive>
-	
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
 				<finalName>orderUploader/OrderUploader</finalName>
 			</configuration>
 		</plugin>

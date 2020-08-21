@@ -98,9 +98,9 @@ public class DBConnection
 		try
 		{
 			ds = new MysqlDataSource();
-			((MysqlDataSource) ds).setURL("jdbc:mysql://localhost:3306/orderMngr?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
-			((MysqlDataSource) ds).setUser("orderMngr");
-			((MysqlDataSource) ds).setPassword("Omh1nppa");
+			((MysqlDataSource) ds).setURL(ap.getDbConnectionURL());
+			((MysqlDataSource) ds).setUser(ap.getDbUser());
+			((MysqlDataSource) ds).setPassword(ap.getDbPassword());
 			
 			conn = ds.getConnection();
 			st = conn.createStatement();

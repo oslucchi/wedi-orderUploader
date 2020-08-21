@@ -292,7 +292,7 @@ public class PDFReader {
 				
 		ArrayList<OrderDetails> orderDetails = new ArrayList<OrderDetails>();
 		OrderDetails od;
-		Articles article = new Articles();
+//		Articles article = new Articles();
 		Orders order = new Orders();
 		String[] articleDetails;
 		PDDocument document;
@@ -310,6 +310,7 @@ public class PDFReader {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			log.error(e1);
+			throw e1;
 		}
 
 		try
@@ -494,6 +495,10 @@ public class PDFReader {
 			log.error(e1);
 			DBInterface.TransactionRollback(conn);
 			throw e1;
+		}
+		finally
+		{
+			DBInterface.disconnect(conn);
 		}
 	}
 	
