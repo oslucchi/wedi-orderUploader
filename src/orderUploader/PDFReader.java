@@ -28,7 +28,6 @@ import orderUploader.dbUtils.OrderNotes;
 import orderUploader.dbUtils.OrderShipment;
 import orderUploader.dbUtils.Orders;
 import orderUploader.utils.ApplicationProperties;
-import orderUploader.utils.Utils;
 
 public class PDFReader {
 	private static DBConnection conn;
@@ -179,21 +178,21 @@ public class PDFReader {
 		}
 	}
 	
-	private static boolean isNumeric(String strNum) 
-	{
-		strNum = strNum.replaceAll("\\,", ".");
-	    if (strNum == null) {
-	        return false;
-	    }
-	    try {
-	        Double.parseDouble(strNum);
-	    } 
-	    catch (NumberFormatException nfe) 
-	    {
-	        return false;
-	    }
-	    return true;
-	}
+//	private static boolean isNumeric(String strNum) 
+//	{
+//		strNum = strNum.replaceAll("\\,", ".");
+//	    if (strNum == null) {
+//	        return false;
+//	    }
+//	    try {
+//	        Double.parseDouble(strNum);
+//	    } 
+//	    catch (NumberFormatException nfe) 
+//	    {
+//	        return false;
+//	    }
+//	    return true;
+//	}
 	
 	private static void evaluateArticleDetails(String[] articleDetails, OrderDetails od, int idOrder) throws Exception
 	{
@@ -297,7 +296,7 @@ public class PDFReader {
 		String[] articleDetails;
 		PDDocument document;
 		String text = "";
-
+		
 		try 
 		{
 			document = PDDocument.load(input);
@@ -403,69 +402,82 @@ public class PDFReader {
 			}
 			DBInterface.TransactionCommit(conn);
 
-			log.debug("Numero Ordine: " + order.getOrderRef());					
-			while((offset = text.indexOf("PZ ", offset + 1)) > 0)
+			log.debug("Numero Ordine: " + order.getOrderRef());
+			String[] umArray = {"PZ", "mq", "m"};
+			for(String um : umArray)
 			{
-				log.debug(text.substring(offset, offset + 10));
-				if (text.charAt(offset + 3) == '=')
+				offset = 100;
+				while((offset = text.indexOf(um + " ", offset + 1)) > 0)
 				{
-					offset += 5;
-					continue;
-				}				
-				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
-				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
-				if (!isNumeric(value))
-					continue;
+					String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
+					value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
+					articleDetails = value.split(" +");
+					if ((articleDetails.length != 5) || (articleDetails[4].compareTo(um) != 0))
+						continue;
 
-				for(; (int) text.charAt(offset - 1) != 10; offset--)
-					;
-				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
-				value = value.substring(0, value.lastIndexOf("PZ") + 2);
-				log.debug("Dati articolo: " + value);
-				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
-				od = new OrderDetails();
-				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-				orderDetails.add(od);
-				offset += text.substring(offset).indexOf("\n") + 1;
+					for(int y = 0; y < 5; y++)
+					{
+						articleDetails[y] = articleDetails[y].replaceAll(",", ".");
+					}
+					od = new OrderDetails();
+					evaluateArticleDetails(articleDetails, od, order.getIdOrder());
+					orderDetails.add(od);
+					offset += text.substring(offset).indexOf("\n") + 1;
+				}
 			}
-			offset = 100;
-			while((offset = text.indexOf("mq ", offset + 1)) > 0)
-			{
-				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
-				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
-				if (!isNumeric(value))
-					continue;
-
-				for(; (int) text.charAt(offset - 1) != 10; offset--)
-					;
-				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
-				value = value.substring(0, value.lastIndexOf("mq") + 2);
-				log.debug("Dati articolo: " + value);
-				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
-				od = new OrderDetails();
-				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-				orderDetails.add(od);
-				offset += text.substring(offset).indexOf("\n") + 1;
-			}
-			offset = 100;
-			while((offset = text.indexOf("m ", offset + 1)) > 0)
-			{
-				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset - 1);
-				value = text.substring(temp.lastIndexOf("\n") + 2, temp.lastIndexOf("\n") + 6);
-				if (!isNumeric(value))
-					continue;
-				
-				for(; (int) text.charAt(offset - 1) != 10; offset--)
-					;
-				value = text.substring(offset, text.substring(offset).indexOf("\n") + offset - 1);
-				value = value.substring(0, value.lastIndexOf(" m") + 2);
-				log.debug("Dati articolo: " + value);
-				articleDetails = Utils.removeEmptyEntries(value.trim().split(" "));
-				od = new OrderDetails();
-				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-				orderDetails.add(od);
-				offset += text.substring(offset).indexOf("\n") + 1;
-			}
+//			while((offset = text.indexOf("PZ ", offset + 1)) > 0)
+//			{
+//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
+//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
+//				articleDetails = value.split(" +");
+//				if ((articleDetails.length != 5) || (articleDetails[4].compareTo("PZ") != 0))
+//					continue;
+//
+//				for(int y = 0; y < 5; y++)
+//				{
+//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
+//				}
+//				od = new OrderDetails();
+//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
+//				orderDetails.add(od);
+//				offset += text.substring(offset).indexOf("\n") + 1;
+//			}
+//			offset = 100;
+//			while((offset = text.indexOf("mq ", offset + 1)) > 0)
+//			{
+//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
+//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
+//				articleDetails = value.split(" +");
+//				if ((articleDetails.length != 5) || (articleDetails[4].compareTo("mq") != 0))
+//					continue;
+//
+//				for(int y = 0; y < 5; y++)
+//				{
+//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
+//				}
+//				od = new OrderDetails();
+//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
+//				orderDetails.add(od);
+//				offset += text.substring(offset).indexOf("\n") + 1;
+//			}
+//			offset = 100;
+//			while((offset = text.indexOf("m ", offset + 1)) > 0)
+//			{
+//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
+//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
+//				articleDetails = value.split(" +");
+//				if ((articleDetails.length < 5) || (articleDetails[4].compareTo("m") != 0))
+//					continue;
+//
+//				for(int y = 0; y < 5; y++)
+//				{
+//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
+//				}
+//				od = new OrderDetails();
+//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
+//				orderDetails.add(od);
+//				offset += text.substring(offset).indexOf("\n") + 1;
+//			}
 
 			OrderDetails.insertCollection(conn, orderDetails, "idOrderDetails", OrderDetails.class);
 			order.setCompositionBoards(components[1]);
