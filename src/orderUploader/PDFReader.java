@@ -281,6 +281,7 @@ public class PDFReader {
 		int offset = 0;
 		int idInsert = 0;
 		boolean updateOrder = false;
+		boolean orderWithGiveaway = false;
 		
 		for(int i = 0; i < components.length; i++)
 		{
@@ -316,7 +317,14 @@ public class PDFReader {
 		{
 			conn = DBInterface.connect(ap);
 			DBInterface.TransactionStart(conn);
-			String searchFor = "stedoqST_OrderNo (it) nicht gefunden!";
+			// Check if order contains gifts
+			String searchFor = "GLI ARTICOLI CON IMPORTO ZERO SI INTENDONO IN OMAGGIO";
+			if (text.indexOf(searchFor) >= 0)
+			{
+				orderWithGiveaway = true;
+			}
+			
+			searchFor = "stedoqST_OrderNo (it) nicht gefunden!";
 			offset = text.indexOf(searchFor) + searchFor.length();
 			String value = text.substring(offset , offset + 8);
 			order.setOrderRef(value);
@@ -412,10 +420,20 @@ public class PDFReader {
 					String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
 					value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
 					articleDetails = value.split(" +");
-					if ((articleDetails.length != 5) || (articleDetails[4].compareTo(um) != 0))
-						continue;
+					
+					if (!(orderWithGiveaway && (articleDetails.length == 3) && (articleDetails[2].compareTo(um) == 0)))
+					{
+						if (!((articleDetails.length == 5) && (articleDetails[4].compareTo(um) == 0)))
+						{
+							continue;
+						}
+					}
 
-					for(int y = 0; y < 5; y++)
+//					if (((articleDetails.length != 5) || (articleDetails[4].compareTo(um) != 0)) ||
+//						(orderWithGiveaway && ((articleDetails.length != 3) || (articleDetails[2].compareTo(um) != 0))))
+//						continue;
+
+					for(int y = 0; y < articleDetails.length; y++)
 					{
 						articleDetails[y] = articleDetails[y].replaceAll(",", ".");
 					}
@@ -517,7 +535,7 @@ public class PDFReader {
 	public static void readFile(ApplicationProperties ap)
 	{
 		
-		try (Stream<Path> walk = Files.walk(Paths.get("/archive/Dev/Projects/wedi/wedi-orderUploader/spool")))
+		try (Stream<Path> walk = Files.walk(Paths.get("/archive/Dev/Projects/wedi/wedi-orderUploader/spool"), 1))
 		{
 
 			List<String> result = walk.map(x -> x.toString())
