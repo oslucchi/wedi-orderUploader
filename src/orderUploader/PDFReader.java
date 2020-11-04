@@ -435,6 +435,7 @@ public class PDFReader {
 
 					for(int y = 0; y < articleDetails.length; y++)
 					{
+						articleDetails[y] = articleDetails[y].replaceAll("\\.", "");
 						articleDetails[y] = articleDetails[y].replaceAll(",", ".");
 					}
 					od = new OrderDetails();
