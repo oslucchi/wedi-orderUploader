@@ -28,6 +28,7 @@ import orderUploader.dbUtils.OrderNotes;
 import orderUploader.dbUtils.OrderShipment;
 import orderUploader.dbUtils.Orders;
 import orderUploader.utils.ApplicationProperties;
+import orderUploader.utils.Utils;
 
 public class PDFReader {
 	private static DBConnection conn;
@@ -385,7 +386,7 @@ public class PDFReader {
 			searchFor = "Data di consegna:";
 			offset = text.indexOf(searchFor) + searchFor.length() + 1;
 			value = text.substring(offset , text.substring(offset).indexOf("\n") + offset);
-			order.setCustomerOrderRef(value);
+			order.setCustomerOrderRef(Utils.quoteDBSpecialChar(value));
 			
 			searchFor = "circa ";
 			offset = text.indexOf(searchFor) + searchFor.length();

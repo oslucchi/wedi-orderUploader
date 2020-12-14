@@ -56,5 +56,11 @@ public class Utils {
 		return (retVal);
 	}
 	
+	public static String quoteDBSpecialChar(String in)
+	{
+		String out;
+		out = in.replaceAll("\\\\", " ").replaceAll("\'",  "\\\\'");
+		return out;
+	}
 
 }
