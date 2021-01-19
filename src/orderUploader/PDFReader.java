@@ -293,7 +293,6 @@ public class PDFReader {
 				
 		ArrayList<OrderDetails> orderDetails = new ArrayList<OrderDetails>();
 		OrderDetails od;
-//		Articles article = new Articles();
 		Orders order = new Orders();
 		String[] articleDetails;
 		PDDocument document;
@@ -422,17 +421,13 @@ public class PDFReader {
 					value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
 					articleDetails = value.split(" +");
 					
-					if (!(orderWithGiveaway && (articleDetails.length == 3) && (articleDetails[2].compareTo(um) == 0)))
+					if (!((articleDetails.length == 3) && (articleDetails[2].compareTo(um) == 0)))
 					{
 						if (!((articleDetails.length == 5) && (articleDetails[4].compareTo(um) == 0)))
 						{
 							continue;
 						}
 					}
-
-//					if (((articleDetails.length != 5) || (articleDetails[4].compareTo(um) != 0)) ||
-//						(orderWithGiveaway && ((articleDetails.length != 3) || (articleDetails[2].compareTo(um) != 0))))
-//						continue;
 
 					for(int y = 0; y < articleDetails.length; y++)
 					{
@@ -445,59 +440,6 @@ public class PDFReader {
 					offset += text.substring(offset).indexOf("\n") + 1;
 				}
 			}
-//			while((offset = text.indexOf("PZ ", offset + 1)) > 0)
-//			{
-//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
-//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
-//				articleDetails = value.split(" +");
-//				if ((articleDetails.length != 5) || (articleDetails[4].compareTo("PZ") != 0))
-//					continue;
-//
-//				for(int y = 0; y < 5; y++)
-//				{
-//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
-//				}
-//				od = new OrderDetails();
-//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-//				orderDetails.add(od);
-//				offset += text.substring(offset).indexOf("\n") + 1;
-//			}
-//			offset = 100;
-//			while((offset = text.indexOf("mq ", offset + 1)) > 0)
-//			{
-//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
-//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
-//				articleDetails = value.split(" +");
-//				if ((articleDetails.length != 5) || (articleDetails[4].compareTo("mq") != 0))
-//					continue;
-//
-//				for(int y = 0; y < 5; y++)
-//				{
-//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
-//				}
-//				od = new OrderDetails();
-//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-//				orderDetails.add(od);
-//				offset += text.substring(offset).indexOf("\n") + 1;
-//			}
-//			offset = 100;
-//			while((offset = text.indexOf("m ", offset + 1)) > 0)
-//			{
-//				String temp =  text.substring(1, text.substring(offset).indexOf("\n") + offset);
-//				value = text.substring(temp.lastIndexOf("\n") + 1, temp.length()).trim();
-//				articleDetails = value.split(" +");
-//				if ((articleDetails.length < 5) || (articleDetails[4].compareTo("m") != 0))
-//					continue;
-//
-//				for(int y = 0; y < 5; y++)
-//				{
-//					articleDetails[y] = articleDetails[y].replaceAll(",", ".");
-//				}
-//				od = new OrderDetails();
-//				evaluateArticleDetails(articleDetails, od, order.getIdOrder());
-//				orderDetails.add(od);
-//				offset += text.substring(offset).indexOf("\n") + 1;
-//			}
 
 			OrderDetails.insertCollection(conn, orderDetails, "idOrderDetails", OrderDetails.class);
 			order.setCompositionBoards(components[1]);
