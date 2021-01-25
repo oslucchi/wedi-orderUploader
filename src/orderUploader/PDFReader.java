@@ -385,7 +385,8 @@ public class PDFReader {
 			searchFor = "Data di consegna:";
 			offset = text.indexOf(searchFor) + searchFor.length() + 1;
 			value = text.substring(offset , text.substring(offset).indexOf("\n") + offset);
-			order.setCustomerOrderRef(Utils.quoteDBSpecialChar(value));
+//			order.setCustomerOrderRef(Utils.quoteDBSpecialChar(value));
+			order.setCustomerOrderRef(value);
 			
 			searchFor = "circa ";
 			offset = text.indexOf(searchFor) + searchFor.length();
