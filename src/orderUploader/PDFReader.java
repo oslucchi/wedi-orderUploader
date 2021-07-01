@@ -441,6 +441,23 @@ public class PDFReader {
 					offset += text.substring(offset).indexOf("\n") + 1;
 				}
 			}
+			try {
+				searchFor = "Valore netto di merce EUR";
+				offset = text.indexOf(searchFor) + searchFor.length();
+				value = text.substring(offset , offset + 20);
+				value = value.substring(0, value.indexOf("\n")).trim();
+				value = value.replaceAll("\\,", "");
+//				offset = value.lastIndexOf(".");
+//				value = value.replaceAll("\\,", "");
+//				String invoiceVal = value.substring(0, offset) +
+//									value.substring(offset).replaceAll("\\.", ",");
+				order.setInvoiceValue(Double.parseDouble(value));
+			}
+			catch(Exception ignore)
+			{
+				ignore.printStackTrace();
+				log.error("Trace: ", ignore);
+			}
 
 			OrderDetails.insertCollection(conn, orderDetails, "idOrderDetails", OrderDetails.class);
 			order.setCompositionBoards(components[1]);

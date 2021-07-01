@@ -41,6 +41,7 @@ public class Orders extends DBInterface
     protected String sourceIssue;
     protected double orderValue;
     protected String confirmationEmail;
+    protected double invoiceValue;
 	protected boolean selected = false;
 	
 	private void setNames()
@@ -397,5 +398,13 @@ public class Orders extends DBInterface
 
 	public void setConfirmationEmail(String confirmationEmail) {
 		this.confirmationEmail = confirmationEmail;
+	}
+
+	public double getInvoiceValue() {
+		return invoiceValue;
+	}
+
+	public void setInvoiceValue(double invoiceValue) {
+		this.invoiceValue = invoiceValue;
 	}
 }
